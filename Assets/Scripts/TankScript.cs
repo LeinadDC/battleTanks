@@ -11,6 +11,9 @@ public class TankScript : MonoBehaviour {
     private GameObject theTarget = null;
     public GameObject[] munition;
     private GameObject bullet;
+    private State state;
+    private float verticalBorder, horizontalBorder;
+    public float tankLife = 100;
 
     public enum State
     {
@@ -20,28 +23,13 @@ public class TankScript : MonoBehaviour {
         Flee,
     }
 
-    void StateSwitch(State state)
-    {
-            switch (state)
-            {
-                case State.Attack:
-                    shootEnemy();
-                    break;
-                case State.Chase:
-                    break;
-                case State.Evade:
-                    break;
-                case State.Flee:
-                    Debug.Log("Escapando");
-                    break;
-            }
-    }
-
     // Variables initialization
     void Start() {
         //UnityWebRequest www = UnityWebRequest.Post("http://192.168.98.131:5000/position",enemyTank.transform.position.ToString());
         //www.Send();
         getObjective();
+        verticalBorder = Camera.main.orthographicSize;
+        horizontalBorder = verticalBorder * Screen.width / Screen.height;
     }
 
     // Get the other (s) tank (s) in order to play against them. Can also be used to change objective in case there are many tanks.
@@ -54,47 +42,89 @@ public class TankScript : MonoBehaviour {
         } while (theTarget == transform.gameObject);
 
     }
+    float tChange = 0;
+    float randomX;
+    float randomY;
+    Vector3 movementR;
     // Frame Update
     void Update () {
     var axisX = Input.GetAxis("Horizontal");
     var axisY = Input.GetAxis("Vertical");
     movement.x = axisX;
     movement.y = axisY;
+        var maxX = 6.9;
+        var minX = -6.9;
+        var maxY = 5.2;
+        var minY = -5.2;
+        //transform.rotation = Quaternion.LookRotation(Vector3.forward, movement);
+        //transform.Translate(new Vector3(movement.x, movement.y) * Time.deltaTime * thrust, Space.World);
 
-    
-    //transform.rotation = Quaternion.LookRotation(Vector3.forward, movement);
-    //transform.Translate(new Vector3(movement.x, movement.y) * Time.deltaTime * thrust, Space.World);
+        //transform.position = Vector3.MoveTowards(transform.position, theTarget.transform.position, Time.deltaTime * thrust);
+        // change to random direction at random intervals
+        if (Time.time >= tChange)
+        {
+            randomX = Random.Range(-1.0f, 2.0f);
+            randomY = Random.Range(-1.0f, 2.0f); 
+            tChange = Time.time + 2f;
+        }
+        // if object reached any border, revert the appropriate direction
+        if (transform.position.x >= maxX || transform.position.x <= minX)
+        {
+            movementR = new Vector3(-randomX, randomY, 0);
+        }
+        if (transform.position.y >= maxY || transform.position.y <= minY)
+        {
+            movementR = new Vector3(randomX, -randomY, 0);
+        }
+        movementR = new Vector3(randomX, randomY, 0);
+        transform.rotation = Quaternion.LookRotation(Vector3.forward, movementR);
+        transform.Translate(movementR * thrust * Time.deltaTime);
 
-    //transform.position = Vector3.MoveTowards(transform.position, theTarget.transform.position, Time.deltaTime * thrust);
+        Vector3 direction = theTarget.transform.position - transform.position;
+        Quaternion lookRotation = Quaternion.LookRotation(Vector3.forward, -direction);
+        Vector3 rotation = lookRotation.eulerAngles;
+        barrel.transform.rotation = Quaternion.Euler(0f, 0f, rotation.z);
 
-    Vector3 direction = theTarget.transform.position - transform.position;
-    Quaternion lookRotation = Quaternion.LookRotation(Vector3.forward, -direction);
-    Vector3 rotation = lookRotation.eulerAngles;
-    barrel.transform.rotation = Quaternion.Euler(0f, 0f, rotation.z);
-    shootEnemy();
+        //    Collider2D hit = Physics2D.OverlapCircle(transform.position,0.6f);
+        //    var xPosition = hit.transform.position.x;
+        //    var yPosition = hit.transform.position.x;
+        //    if (hit.tag == "Bullet")
+        //        {
+        //            Debug.Log("Objeto detectado" + xPosition + yPosition);
+        //        state = State.Chase;
+        //        }
 
-        Collider2D hit = Physics2D.OverlapCircle(transform.position,0.4f);
+        //        if(state == State.Chase)
+        //    {
+        //        evadeEnemy(xPosition, yPosition);
 
-            if (hit.tag == "Bullet")
-            {
-                Debug.Log("Objeto detectado");
-                evadeEnemy();
-            }
-
+        //    }
+        shootEnemy();
+        LifeHandler();
     }
 
     float basicTimer;
     float basicWaitingTime = 1f;
     int counterTest = 0;
     
-    void evadeEnemy()
+    void evadeEnemy(float xPosition, float yPosition)
     {
         Vector3 moveDestination = new Vector3(-4.50f, 2.37f);
-        do
+        if(xPosition <= 0)
         {
-            transform.position = Vector3.MoveTowards(transform.position, moveDestination, Time.deltaTime * thrust);
+            //transform.position = Vector3.MoveTowards(transform.position, moveDestination, Time.deltaTime * thrust);
+           transform.Translate(new Vector3(moveDestination.x, moveDestination.y) * Time.deltaTime * thrust, Space.World);
+        }
+        else
+        {
+            //transform.position = Vector3.MoveTowards(transform.position, moveDestination, Time.deltaTime * thrust);
+            transform.Translate(new Vector3(moveDestination.x, moveDestination.y) * Time.deltaTime * thrust, Space.World);
+        }
+        //do
+        //{
+        //    transform.position = Vector3.MoveTowards(transform.position, moveDestination, Time.deltaTime * thrust);
 
-        } while (transform.position != moveDestination);
+        //} while (transform.position != moveDestination);
     }
     void shootEnemy()
     {
@@ -138,13 +168,47 @@ public class TankScript : MonoBehaviour {
         if (barrelPosition.x >= 0)
         {
 
-            return Instantiate(munitionType, new Vector3(barrelPosition.x - 0.3f, barrelPosition.y, barrelPosition.z), barrel.transform.rotation);
+            return Instantiate(munitionType, new Vector3(barrelPosition.x - 0.4f, barrelPosition.y, barrelPosition.z),barrel.transform.rotation);
         }
         else
         {
-            return Instantiate(munitionType, new Vector3(barrelPosition.x + 0.3f, barrelPosition.y, barrelPosition.z), barrel.transform.rotation);
+            return Instantiate(munitionType, new Vector3(barrelPosition.x + 0.4f, barrelPosition.y, barrelPosition.z), barrel.transform.rotation);
         }
     }
 
+    int basicCounter = 0;
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if(collision.gameObject.tag == "Bullet")
+        {
+            basicCounter++;
+            Debug.Log("Contador basico " + basicCounter);
+            if(basicCounter == 50)
+            {
+                tankLife -= 25;
+            }
+
+        }else if(collision.gameObject.tag == "MediumBullet")
+        {
+            tankLife -= 50;
+            Debug.Log("Impacto medio");
+        }else if(collision.gameObject.tag == "HeavyBullet")
+        {
+            tankLife -= 100;
+            Debug.Log("Impacto pesado");
+        }
+        else
+        {
+            Debug.Log("Impacto con otro objeto");
+        }
+    }
+
+    void LifeHandler()
+    {
+        if(tankLife <= 0)
+        {
+            Destroy(gameObject);
+        }
+    }
 
 }

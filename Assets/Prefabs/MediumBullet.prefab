@@ -37,9 +37,10 @@ GameObject:
   - component: {fileID: 4070244717802826}
   - component: {fileID: 50275790816634784}
   - component: {fileID: 58309253337709430}
+  - component: {fileID: 114100811900011490}
   m_Layer: 0
   m_Name: MediumBullet
-  m_TagString: Untagged
+  m_TagString: MediumBullet
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -97,7 +98,7 @@ CircleCollider2D:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1643985028773764}
-  m_Enabled: 0
+  m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
   m_IsTrigger: 0
@@ -106,6 +107,18 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0.06982067}
   serializedVersion: 2
   m_Radius: 0.05898422
+--- !u!114 &114100811900011490
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1643985028773764}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c357c84efba3f194c94a50dce87da1df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 2
 --- !u!212 &212857966738420838
 SpriteRenderer:
   m_ObjectHideFlags: 1
