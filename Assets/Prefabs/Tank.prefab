@@ -52,9 +52,10 @@ GameObject:
   - component: {fileID: 4493372743065866}
   - component: {fileID: 50403846360091660}
   - component: {fileID: 114466936050119584}
+  - component: {fileID: 61853962977232112}
   m_Layer: 0
   m_Name: Tank
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -179,6 +180,31 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!61 &61853962977232112
+BoxCollider2D:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1470135836351248}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: -0.002190113, y: 0.0021901727}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0, y: 0}
+    oldSize: {x: 0, y: 0}
+    newSize: {x: 0, y: 0}
+    adaptiveTilingThreshold: 0
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  serializedVersion: 2
+  m_Size: {x: 0.4145031, y: 0.39114153}
+  m_EdgeRadius: 0
 --- !u!114 &114466936050119584
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -191,10 +217,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   thrust: 2.5
-  r2d: {fileID: 0}
-  movement: {x: 0, y: 0, z: 0}
-  enemyTank: {fileID: 0}
   barrel: {fileID: 1869050535594620}
+  munition:
+  - {fileID: 1552271447094930, guid: e1e99e3f776391b4fbd7252b0be9c2e7, type: 2}
+  - {fileID: 1643985028773764, guid: c0d1aa119631ded4c9fda07b67ccd037, type: 2}
+  - {fileID: 1226227421115346, guid: 46de9d83de4e6fd4e8d264eaac3059f2, type: 2}
 --- !u!212 &212245375890619170
 SpriteRenderer:
   m_ObjectHideFlags: 1
