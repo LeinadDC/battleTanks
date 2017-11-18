@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class TankScript : MonoBehaviour {
 
@@ -14,6 +15,7 @@ public class TankScript : MonoBehaviour {
     private State state;
     private float verticalBorder, horizontalBorder;
     public float tankLife = 100;
+    public Text lifeText;
 
     public enum State
     {
@@ -47,43 +49,9 @@ public class TankScript : MonoBehaviour {
     float randomY;
     Vector3 movementR;
     // Frame Update
-    void Update () {
-    var axisX = Input.GetAxis("Horizontal");
-    var axisY = Input.GetAxis("Vertical");
-    movement.x = axisX;
-    movement.y = axisY;
-        var maxX = 6.9;
-        var minX = -6.9;
-        var maxY = 5.2;
-        var minY = -5.2;
-        //transform.rotation = Quaternion.LookRotation(Vector3.forward, movement);
-        //transform.Translate(new Vector3(movement.x, movement.y) * Time.deltaTime * thrust, Space.World);
-
-        //transform.position = Vector3.MoveTowards(transform.position, theTarget.transform.position, Time.deltaTime * thrust);
-        // change to random direction at random intervals
-        if (Time.time >= tChange)
-        {
-            randomX = Random.Range(-1.0f, 2.0f);
-            randomY = Random.Range(-1.0f, 2.0f); 
-            tChange = Time.time + 2f;
-        }
-        // if object reached any border, revert the appropriate direction
-        if (transform.position.x >= maxX || transform.position.x <= minX)
-        {
-            movementR = new Vector3(-randomX, randomY, 0);
-        }
-        if (transform.position.y >= maxY || transform.position.y <= minY)
-        {
-            movementR = new Vector3(randomX, -randomY, 0);
-        }
-        movementR = new Vector3(randomX, randomY, 0);
-        transform.rotation = Quaternion.LookRotation(Vector3.forward, movementR);
-        transform.Translate(movementR * thrust * Time.deltaTime);
-
-        Vector3 direction = theTarget.transform.position - transform.position;
-        Quaternion lookRotation = Quaternion.LookRotation(Vector3.forward, -direction);
-        Vector3 rotation = lookRotation.eulerAngles;
-        barrel.transform.rotation = Quaternion.Euler(0f, 0f, rotation.z);
+    void Update ()
+    {
+        automaticMovement();
 
         //    Collider2D hit = Physics2D.OverlapCircle(transform.position,0.6f);
         //    var xPosition = hit.transform.position.x;
@@ -99,8 +67,64 @@ public class TankScript : MonoBehaviour {
         //        evadeEnemy(xPosition, yPosition);
 
         //    }
-        shootEnemy();
+        shootEnemy(barrel.transform.position);
         LifeHandler();
+    }
+
+    private void automaticMovement()
+    {
+        var maxX = 6;
+        var minX = -6;
+        var maxY = 4.7;
+        var minY = -4.7;
+        generateRandomMovementRange();
+
+        movementR = new Vector3(randomX, randomY, 0);
+        //collisionControlDetection(maxX, minX, maxY, minY);
+        float angle = Mathf.Atan2(movementR.y, movementR.x) * Mathf.Rad2Deg;
+        //transform.rotation = Quaternion.LookRotation(Vector3.forward, movementR);
+        transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+
+        transform.Translate(movementR * thrust * Time.deltaTime);
+
+        Vector3 direction = theTarget.transform.position - transform.position;
+        Quaternion lookRotation = Quaternion.LookRotation(Vector3.forward, -direction);
+        Vector3 rotation = lookRotation.eulerAngles;
+        barrel.transform.rotation = Quaternion.Euler(0f, 0f, rotation.z);
+    }
+
+    private void collisionControlDetection(int maxX, int minX, double maxY, double minY)
+    {
+        if (transform.position.x >= maxX || transform.position.x <= minX)
+        {
+            movementR = new Vector3(randomX * -1, randomY, 0);
+        }
+        if (transform.position.y >= maxY || transform.position.y <= minY)
+        {
+            movementR = new Vector3(randomX, randomY * -1, 0);
+        }
+    }
+
+    private void generateRandomMovementRange()
+    {
+        if (Time.time >= tChange)
+        {
+            randomX = Random.Range(-1.0f, 2.0f);
+            randomY = Random.Range(-1.0f, 2.0f);
+            tChange = Time.time + 2.5f;
+        }
+    }
+
+    private void ManualMovement()
+    {
+        var axisX = Input.GetAxis("Horizontal");
+        var axisY = Input.GetAxis("Vertical");
+        movement.x = axisX;
+        movement.y = axisY;
+        transform.rotation = Quaternion.LookRotation(Vector3.forward, movement);
+        transform.Translate(new Vector3(movement.x, movement.y) * Time.deltaTime * thrust, Space.World);
+
+        transform.position = Vector3.MoveTowards(transform.position, theTarget.transform.position, Time.deltaTime * thrust);
     }
 
     float basicTimer;
@@ -126,9 +150,9 @@ public class TankScript : MonoBehaviour {
 
         //} while (transform.position != moveDestination);
     }
-    void shootEnemy()
+    void shootEnemy(Vector3 barrel)
     {
-        var barrelPosition = barrel.transform.position;
+        var barrelPosition = barrel;
         var bullet = munition[0];
         basicTimer += Time.deltaTime;
         if(basicTimer > basicWaitingTime)
@@ -165,15 +189,11 @@ public class TankScript : MonoBehaviour {
 
     private GameObject InstantiateBullet(GameObject munitionType,Vector3 barrelPosition)
     {
-        if (barrelPosition.x >= 0)
-        {
-
-            return Instantiate(munitionType, new Vector3(barrelPosition.x - 0.4f, barrelPosition.y, barrelPosition.z),barrel.transform.rotation);
-        }
-        else
-        {
-            return Instantiate(munitionType, new Vector3(barrelPosition.x + 0.4f, barrelPosition.y, barrelPosition.z), barrel.transform.rotation);
-        }
+        Vector3 localOffset = new Vector3(0, -0.5f, 0);
+        var worldOffset = barrel.transform.rotation * localOffset;
+        var spawnPosition = barrel.transform.position + worldOffset;
+        return Instantiate(munitionType, spawnPosition, barrel.transform.rotation);
+        
     }
 
     int basicCounter = 0;
@@ -201,6 +221,19 @@ public class TankScript : MonoBehaviour {
         {
             Debug.Log("Impacto con otro objeto");
         }
+
+        if (collision.gameObject.name == "LeftWall" || collision.gameObject.name == "RightWall")
+        {
+            Debug.Log("Cambiado x");
+            movementR.x *= -1;
+            transform.Translate(movementR * thrust * Time.deltaTime);
+        }
+        else if(collision.gameObject.name == "TopWall" || collision.gameObject.name == "BottomWall")
+        {
+            Debug.Log("Cambiado y");
+            movementR.y *= -1;
+            transform.Translate(movementR * thrust * Time.deltaTime);
+        }
     }
 
     void LifeHandler()
@@ -210,5 +243,6 @@ public class TankScript : MonoBehaviour {
             Destroy(gameObject);
         }
     }
+
 
 }

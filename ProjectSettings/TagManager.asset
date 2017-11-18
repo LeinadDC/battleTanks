@@ -8,6 +8,7 @@ TagManager:
   - Bullet
   - MediumBullet
   - HeavyBullet
+  - Wall
   layers:
   - Default
   - TransparentFX
