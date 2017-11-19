@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using System.Web;
 
 public class TankScript : MonoBehaviour {
 
@@ -31,6 +32,11 @@ public class TankScript : MonoBehaviour {
         Evade,
         Flee,
     }
+    [Serializable]
+    public class Player{
+        public string playerId;
+        public int tankLife;
+    }
     // Variables initialization
     void Start() {
         barrel = transform.Find("Barrel");
@@ -46,6 +52,14 @@ public class TankScript : MonoBehaviour {
         Vector3 originPosition = new Vector3(xPosition, yPosition, 0);
         transform.position = originPosition;
         
+    }
+
+    public Player jSONReady()
+    {
+        Player player = new Player();
+        player.playerId = this.playerId;
+        player.tankLife = this.tankLife;
+        return player;
     }
 
 
