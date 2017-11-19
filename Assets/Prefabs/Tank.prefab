@@ -217,12 +217,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   thrust: 1
-  barrel: {fileID: 1869050535594620}
   munition:
   - {fileID: 1552271447094930, guid: e1e99e3f776391b4fbd7252b0be9c2e7, type: 2}
   - {fileID: 1643985028773764, guid: c0d1aa119631ded4c9fda07b67ccd037, type: 2}
   - {fileID: 1226227421115346, guid: 46de9d83de4e6fd4e8d264eaac3059f2, type: 2}
   tankLife: 100
+  playerId: Test
+  actionId: 1
+  actionType: Atacar
+  movementCords: 
 --- !u!212 &212245375890619170
 SpriteRenderer:
   m_ObjectHideFlags: 1

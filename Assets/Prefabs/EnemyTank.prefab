@@ -111,7 +111,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1069592701516630}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.508, y: 0, z: 0}
+  m_LocalPosition: {x: 3, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4658393915900728}
@@ -217,12 +217,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   thrust: 1
-  barrel: {fileID: 1030427613846890}
   munition:
   - {fileID: 1552271447094930, guid: e1e99e3f776391b4fbd7252b0be9c2e7, type: 2}
   - {fileID: 1643985028773764, guid: c0d1aa119631ded4c9fda07b67ccd037, type: 2}
   - {fileID: 1226227421115346, guid: 46de9d83de4e6fd4e8d264eaac3059f2, type: 2}
   tankLife: 100
+  playerId: Test2
+  actionId: 2
+  actionType: Correr
+  movementCords: 
 --- !u!212 &212057617692416436
 SpriteRenderer:
   m_ObjectHideFlags: 1

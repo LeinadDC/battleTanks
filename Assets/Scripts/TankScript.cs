@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -8,14 +9,20 @@ public class TankScript : MonoBehaviour {
 
     public float thrust;
     private Vector3 movement;
-    public GameObject barrel;
+    private Transform barrel;
     private GameObject theTarget = null;
     public GameObject[] munition;
     private GameObject bullet;
     private State state;
     private float verticalBorder, horizontalBorder;
-    public float tankLife = 100;
-    public Text lifeText;
+    public int tankLife = 100;
+    private Text lifeText;
+    private string playerId;
+
+    //TEST
+    public int actionId = 1;
+    public string actionType = "Atacar";
+    public string movementCords;
 
     public enum State
     {
@@ -24,14 +31,39 @@ public class TankScript : MonoBehaviour {
         Evade,
         Flee,
     }
-
     // Variables initialization
     void Start() {
-        //UnityWebRequest www = UnityWebRequest.Post("http://192.168.98.131:5000/position",enemyTank.transform.position.ToString());
-        //www.Send();
+        barrel = transform.Find("Barrel");
         getObjective();
         verticalBorder = Camera.main.orthographicSize;
         horizontalBorder = verticalBorder * Screen.width / Screen.height;
+    }
+
+    public void Initialize(string playerId, int tankLife, float xPosition,float yPosition)
+    {
+        this.playerId = playerId;
+        this.tankLife = tankLife;
+        Vector3 originPosition = new Vector3(xPosition, yPosition, 0);
+        transform.position = originPosition;
+        
+    }
+
+
+    void postData()
+    {
+        movementCords = transform.position.ToString();
+        var test = JsonUtility.ToJson(this);
+        UnityWebRequest www = UnityWebRequest.Post("http://192.168.98.131:5000/testPost", test);
+        www.SetRequestHeader("Content-Type", "application/json");
+        www.Send();
+        Debug.Log("Enviado : " + test);
+    }
+
+    void getData()
+    {
+        UnityWebRequest www = UnityWebRequest.Get("http://192.168.98.131:5000/testGet");
+        www.Send();
+        Debug.Log("Descargado del servidor: "+ www.downloadHandler.text.ToString());
     }
 
     // Get the other (s) tank (s) in order to play against them. Can also be used to change objective in case there are many tanks.
@@ -40,7 +72,7 @@ public class TankScript : MonoBehaviour {
         var tanks = GameObject.FindGameObjectsWithTag("Enemy");
         do
         {
-            theTarget = tanks[Random.Range(0, tanks.Length)];
+            theTarget = tanks[UnityEngine.Random.Range(0, tanks.Length)];
         } while (theTarget == transform.gameObject);
 
     }
@@ -109,8 +141,8 @@ public class TankScript : MonoBehaviour {
     {
         if (Time.time >= tChange)
         {
-            randomX = Random.Range(-1.0f, 2.0f);
-            randomY = Random.Range(-1.0f, 2.0f);
+            randomX = UnityEngine.Random.Range(-1.0f, 2.0f);
+            randomY = UnityEngine.Random.Range(-1.0f, 2.0f);
             tChange = Time.time + 2.5f;
         }
     }
@@ -147,7 +179,6 @@ public class TankScript : MonoBehaviour {
         //do
         //{
         //    transform.position = Vector3.MoveTowards(transform.position, moveDestination, Time.deltaTime * thrust);
-
         //} while (transform.position != moveDestination);
     }
     void shootEnemy(Vector3 barrel)
@@ -207,6 +238,8 @@ public class TankScript : MonoBehaviour {
             {
                 tankLife -= 25;
             }
+           // postData();
+           // getData();
 
         }else if(collision.gameObject.tag == "MediumBullet")
         {
@@ -226,13 +259,13 @@ public class TankScript : MonoBehaviour {
         {
             Debug.Log("Cambiado x");
             movementR.x *= -1;
-            transform.Translate(movementR * thrust * Time.deltaTime);
+            transform.Translate(movementR * -1f * thrust * Time.deltaTime);
         }
         else if(collision.gameObject.name == "TopWall" || collision.gameObject.name == "BottomWall")
         {
             Debug.Log("Cambiado y");
             movementR.y *= -1;
-            transform.Translate(movementR * thrust * Time.deltaTime);
+            transform.Translate(movementR * - 1f * thrust * Time.deltaTime);
         }
     }
 
