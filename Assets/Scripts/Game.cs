@@ -44,10 +44,8 @@ public class Game : MonoBehaviour {
         if(activeSession[0].gameState  == "Waiting")
         {
             Debug.Log("Esperando jugadores");
-            //Instancia jugadores
-            //Envia jugadores
-            //Revisa de nuevo
-            //Inicia Juego
+            instantiatePlayers(activeSession);
+            putRequestUrlBuilder(activeSession[0].gameId);
             StartCoroutine(getSession(activeSession[0].gameId));
         }
         else
@@ -71,7 +69,10 @@ public class Game : MonoBehaviour {
         else
         {
             // Imprime información recibida.
+            Debug.Log("Este es el string normal.");
             Debug.Log(www.downloadHandler.text);
+            Debug.Log("Este es el JSON");
+            ProcessJson(www.downloadHandler.text);
         }
     }
 
@@ -83,10 +84,22 @@ public class Game : MonoBehaviour {
         return requestUrl;
     }
 
+    private static string putRequestUrlBuilder(string gameId)
+    {
+        string id = gameId;
+        string baseUrl = "http://192.168.98.131:5000/sessionUpdate/";
+        string requestUrl = baseUrl + gameId;
+        return requestUrl;
+    }
+
     //Procesa respuesta del servidor y lo convierte en JSON.
     private void ProcessJson(string jsonString)
     {
         JsonData jsonServer = JsonMapper.ToObject(jsonString);
+        string gameStateJson = jsonServer["gameState"].ToString();
+
+
+        Debug.Log(gameStateJson);
     }
 
     //Creador de la sesión de juego
@@ -121,8 +134,16 @@ public class Game : MonoBehaviour {
         www.Send();
     }
 
+    //Envia PUT request para agregar los jugadores de juego en el servidor.
+    private static void sessionUpdate(string gameId, string gameSessionJSON)
+    {
+        string requestUrl = putRequestUrlBuilder(gameId);
+        UnityWebRequest www = UnityWebRequest.Put("requestUrl", gameSessionJSON);
+        www.Send();
+    }
+
     //Instanciador de jugadores AI para probar el juego.
-    void instantiatePlayers()
+    void instantiatePlayers(GameServer[] gameServer)
     {
         //Instanciando jugador 1.
         enemy = GameObject.Instantiate(player1, Vector3.zero, Quaternion.identity).GetComponent<TankScript>();
@@ -133,8 +154,8 @@ public class Game : MonoBehaviour {
         enemy2.Initialize(GUIDCreator(), 100, -3, 0);
 
         //Agregado jugadores al arreglo de los jugadores activos.
-        playersArray.SetValue(enemy.jSONReady(),0);
-        playersArray.SetValue(enemy2.jSONReady(),1);
+        gameServer[0].players.SetValue(enemy.jSONReady(),0);
+        gameServer[0].players.SetValue(enemy2.jSONReady(),1);
     }
 
     //Crear de GUID para la sesión.
