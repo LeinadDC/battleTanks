@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using LitJson;
 using UnityEngine.Networking;
 
 public class Game : MonoBehaviour {
@@ -21,7 +22,6 @@ public class Game : MonoBehaviour {
             this.players = players;
             this.gameState = gameState;
             this.gameWinner = gameWinner;
-
         }
     }
 
@@ -32,24 +32,61 @@ public class Game : MonoBehaviour {
     TankScript.Player[] playersArray = new TankScript.Player[2];
 
     void Start () {
-        instantiatePlayers();
-        createGameSession();
-   
-	}
+        gameBuilder();
 
-    private void getSessionInfo()
-    {
-        
     }
-
 
     // Update is called once per frame
     void Update () {
-   
 
     }
 
-    void createGameSession()
+    void gameBuilder()
+    {
+        var activeSession = createGameSession();
+
+        if(activeSession[0].gameId != null)
+        {
+            instantiatePlayers();
+        }
+        else
+        {
+            Debug.Log("No se ha iniciado ninguna partida.");
+        }
+        
+
+    }
+
+    void getTest()
+    {
+        StartCoroutine(GetText());
+    }
+
+    IEnumerator GetText()
+    {
+        UnityWebRequest www = UnityWebRequest.Get("http://192.168.98.131:5000/getGameSessions/4fe75d94d8734374831d82358dee2481");
+        yield return www.Send();
+
+        if (www.isNetworkError || www.isHttpError)
+        {
+            Debug.Log(www.error);
+        }
+        else
+        {
+            // Show results as text
+            Debug.Log(www.downloadHandler.text);
+
+            // Or retrieve results as binary data
+        }
+    }
+
+    private void ProcessJson(string jsonString)
+    {
+        JsonData jsonServer = JsonMapper.ToObject(jsonString);
+        
+    }
+
+    public GameServer[] createGameSession()
     {
         UnityWebRequest www;
         string playersJSON = JsonHelper.ToJson(playersArray);
@@ -57,9 +94,9 @@ public class Game : MonoBehaviour {
         gameSession[0] = new GameServer(GUIDCreator(), playersArray, "Begun", "None");
         var gameSessionJSON = JsonHelper.ToJson(gameSession);
         Debug.Log(gameSessionJSON);
-        string test = "hola";
         www =UnityWebRequest.Post("http://192.168.98.131:5000/gameSessionInit", gameSessionJSON);
         www.Send();
+        return gameSession;
     }
 
     void instantiatePlayers()
