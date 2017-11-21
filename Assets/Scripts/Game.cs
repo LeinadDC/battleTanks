@@ -31,36 +31,59 @@ public class Game : MonoBehaviour {
     TankScript enemy;
     TankScript enemy2;
     TankScript.Player[] playersArray = new TankScript.Player[2];
+    GameServer[] activeServer = new GameServer[1];
 
-    void Start () {
+    //Inicia un nuevo servidor de juego.
+    private void Start()
+    {
+        activeServer = createGameSession();
+    }
+    //Construye los datos del servidor.
+    void Update   () {
         gameBuilder();
-  
     }
 
     void gameBuilder()
     {
-        var activeSession = createGameSession();
+  
+        //Verifica que todo está bien.
+            if(activeServer[0].gameState  == "Waiting")
+            {
+            //Instancia jugadores, cambia de estado y actualiza información en servidor.
+                instantiatePlayers(activeServer);
+                activeServer[0].gameState = "Begun";
+                putData(activeServer[0].gameId, jsonConverter(activeServer));
+                getData(activeServer[0].gameId);
+                Debug.Log(jsonConverter(activeServer));
 
-        if(activeSession[0].gameState  == "Waiting")
-        {
-            Debug.Log("Esperando jugadores");
-            instantiatePlayers(activeSession);
-            putRequestUrlBuilder(activeSession[0].gameId);
-            StartCoroutine(getSession(activeSession[0].gameId));
-        }
-        else
-        {
-            Debug.Log("Juego iniciado");
-        }
+            }
+            //Les señala a los tanques que ya pueden iniciar.
+            else if(activeServer[0].gameState == "Begun")
+            {
+                enemy.changeState(true);
+                enemy2.changeState(true);
+            }
+            else
+            {
+                Debug.Log("Error");
+            }
         
     }
 
-    //Obtiene información de sesión desde el servidor.
-    IEnumerator getSession(string gameId)
+    //Wrapper para el get.
+    void getData(string gameId)
     {
+        Debug.Log("get data");
         string requestUrl = requestUrlBuilder(gameId);
         UnityWebRequest www = UnityWebRequest.Get(requestUrl);
-        yield return www.Send();
+        StartCoroutine(getSession(www));
+    }
+
+    //Obtiene información de sesión desde el servidor.
+    IEnumerator getSession(UnityWebRequest www)
+    {
+        www.Send();
+        yield return www;
 
         if (www.isNetworkError || www.isHttpError)
         {
@@ -68,11 +91,33 @@ public class Game : MonoBehaviour {
         }
         else
         {
-            // Imprime información recibida.
-            Debug.Log("Este es el string normal.");
-            Debug.Log(www.downloadHandler.text);
-            Debug.Log("Este es el JSON");
-            ProcessJson(www.downloadHandler.text);
+            //activeServer[0].gameState = ProcessJson(www.downloadHandler.text);
+            Debug.Log(ProcessJson(www.downloadHandler.text));
+        }
+    }
+
+    //Wrapper para el post. Revisar este método ya que un wrapper no es necesario en post. Creo.
+    void putData(string gameId,string jsonGameSession)
+    {
+        Debug.Log("Put data");
+        string requestUrl = putRequestUrlBuilder(gameId);
+        UnityWebRequest www = UnityWebRequest.Post(requestUrl,jsonGameSession);
+        Debug.Log(jsonGameSession);
+        StartCoroutine(putSession(www));
+    }
+
+    IEnumerator putSession(UnityWebRequest www)
+    {
+        www.Send();
+        yield return www;
+
+        if (www.isNetworkError || www.isHttpError)
+        {
+            Debug.Log(www.error);
+        }
+        else
+        {
+            Debug.Log("Upload complete!");
         }
     }
 
@@ -93,13 +138,11 @@ public class Game : MonoBehaviour {
     }
 
     //Procesa respuesta del servidor y lo convierte en JSON.
-    private void ProcessJson(string jsonString)
+    private string ProcessJson(string jsonString)
     {
         JsonData jsonServer = JsonMapper.ToObject(jsonString);
         string gameStateJson = jsonServer["gameState"].ToString();
-
-
-        Debug.Log(gameStateJson);
+        return gameStateJson;
     }
 
     //Creador de la sesión de juego
@@ -117,8 +160,12 @@ public class Game : MonoBehaviour {
     private string sessionCreator(GameServer[] gameSession)
     {
         gameSession[0] = new GameServer(GUIDCreator(), playersArray, "Waiting", "None");
-        var gameSessionJSON = JsonHelper.ToJson(gameSession);
-        return gameSessionJSON;
+        return jsonConverter(gameSession);
+    }
+
+    private static string jsonConverter(GameServer[] gameSession)
+    {
+        return JsonHelper.ToJson(gameSession);
     }
 
     //Convertir objetos de jugadores a JSON para ser enviados al servidor.
@@ -138,13 +185,14 @@ public class Game : MonoBehaviour {
     private static void sessionUpdate(string gameId, string gameSessionJSON)
     {
         string requestUrl = putRequestUrlBuilder(gameId);
-        UnityWebRequest www = UnityWebRequest.Put("requestUrl", gameSessionJSON);
+        UnityWebRequest www = UnityWebRequest.Put(requestUrl, gameSessionJSON);
         www.Send();
     }
 
     //Instanciador de jugadores AI para probar el juego.
     void instantiatePlayers(GameServer[] gameServer)
     {
+        Debug.Log("Instanciando jugadores");
         //Instanciando jugador 1.
         enemy = GameObject.Instantiate(player1, Vector3.zero, Quaternion.identity).GetComponent<TankScript>();
         enemy.Initialize(GUIDCreator(), 100, 3, 0);

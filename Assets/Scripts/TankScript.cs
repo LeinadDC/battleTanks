@@ -18,6 +18,7 @@ public class TankScript : MonoBehaviour {
     public int tankLife = 100;
     private Text lifeText;
     private string playerId;
+    public bool gameStarted;
 
     //TEST
     public int actionId = 1;
@@ -51,6 +52,11 @@ public class TankScript : MonoBehaviour {
         Vector3 originPosition = new Vector3(xPosition, yPosition, 0);
         transform.position = originPosition;
         
+    }
+
+    public void changeState(bool play)
+    {
+        this.gameStarted = play;
     }
 
     public Player jSONReady()
@@ -96,7 +102,16 @@ public class TankScript : MonoBehaviour {
     // Frame Update
     void Update ()
     {
-        automaticMovement();
+        if (gameStarted)
+        {
+            automaticMovement();
+            shootEnemy(barrel.transform.position);
+            LifeHandler();
+        }
+        else
+        {
+            
+        }
 
         //    Collider2D hit = Physics2D.OverlapCircle(transform.position,0.6f);
         //    var xPosition = hit.transform.position.x;
@@ -112,8 +127,6 @@ public class TankScript : MonoBehaviour {
         //        evadeEnemy(xPosition, yPosition);
 
         //    }
-        shootEnemy(barrel.transform.position);
-        LifeHandler();
     }
 
     private void automaticMovement()
