@@ -30,7 +30,7 @@ public class Game : MonoBehaviour {
     public GameObject player2;
     TankScript enemy;
     TankScript enemy2;
-    TankScript.Player[] playersArray = new TankScript.Player[2];
+    TankScript.Player[] playersArray;
     GameServer[] activeServer = new GameServer[1];
 
     //Inicia un nuevo servidor de juego.
@@ -50,11 +50,20 @@ public class Game : MonoBehaviour {
             if(activeServer[0].gameState  == "Waiting")
             {
             //Instancia jugadores, cambia de estado y actualiza información en servidor.
+            if (activeServer[0].players == null || activeServer[0].players.Length == 0)
+            {
+                Debug.Log("Instanciando jugadores");
                 instantiatePlayers(activeServer);
+
+            }
+            else
+            {
+                Debug.Log("Ya hay jugadores");
                 activeServer[0].gameState = "Begun";
                 putData(activeServer[0].gameId, jsonConverter(activeServer));
                 getData(activeServer[0].gameId);
                 Debug.Log(jsonConverter(activeServer));
+            }
 
             }
             //Les señala a los tanques que ya pueden iniciar.
@@ -91,7 +100,7 @@ public class Game : MonoBehaviour {
         }
         else
         {
-            //activeServer[0].gameState = ProcessJson(www.downloadHandler.text);
+            activeServer[0].gameState = ProcessJson(www.downloadHandler.text);
             Debug.Log(ProcessJson(www.downloadHandler.text));
         }
     }
@@ -142,6 +151,7 @@ public class Game : MonoBehaviour {
     {
         JsonData jsonServer = JsonMapper.ToObject(jsonString);
         string gameStateJson = jsonServer["gameState"].ToString();
+        Debug.Log(gameStateJson);
         return gameStateJson;
     }
 
@@ -192,6 +202,8 @@ public class Game : MonoBehaviour {
     //Instanciador de jugadores AI para probar el juego.
     void instantiatePlayers(GameServer[] gameServer)
     {
+        playersArray = new TankScript.Player[2];
+        activeServer[0].players = new TankScript.Player[2];
         Debug.Log("Instanciando jugadores");
         //Instanciando jugador 1.
         enemy = GameObject.Instantiate(player1, Vector3.zero, Quaternion.identity).GetComponent<TankScript>();
