@@ -59,7 +59,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1625668875340276
 GameObject:
   m_ObjectHideFlags: 1
@@ -221,11 +221,9 @@ MonoBehaviour:
   - {fileID: 1552271447094930, guid: e1e99e3f776391b4fbd7252b0be9c2e7, type: 2}
   - {fileID: 1643985028773764, guid: c0d1aa119631ded4c9fda07b67ccd037, type: 2}
   - {fileID: 1226227421115346, guid: 46de9d83de4e6fd4e8d264eaac3059f2, type: 2}
-  tankLife: 100
-  playerId: Test
-  actionId: 1
-  actionType: Atacar
-  movementCords: 
+  tankLife: 50
+  gameStarted: 0
+  textLife: {fileID: 0}
 --- !u!212 &212245375890619170
 SpriteRenderer:
   m_ObjectHideFlags: 1

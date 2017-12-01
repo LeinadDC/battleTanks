@@ -20,11 +20,7 @@ public class TankScript : MonoBehaviour {
     private Text lifeText;
     private string playerId;
     public bool gameStarted;
-
-    //TEST
-    public int actionId = 1;
-    public string actionType = "Atacar";
-    public string movementCords;
+    public GameObject textLife;
 
     public enum State
     {
@@ -68,23 +64,6 @@ public class TankScript : MonoBehaviour {
         return player;
     }
 
-
-    void postData()
-    {
-        movementCords = transform.position.ToString();
-        var test = JsonUtility.ToJson(this);
-        UnityWebRequest www = UnityWebRequest.Post("http://192.168.98.131:5000/testPost", test);
-        www.SetRequestHeader("Content-Type", "application/json");
-        www.Send();
-        Debug.Log("Enviado : " + test);
-    }
-
-    void getData()
-    {
-        UnityWebRequest www = UnityWebRequest.Get("http://192.168.98.131:5000/testGet");
-        www.Send();
-        Debug.Log("Descargado del servidor: "+ www.downloadHandler.text.ToString());
-    }
 
     // Get the other (s) tank (s) in order to play against them. Can also be used to change objective in case there are many tanks.
    void getObjective()
@@ -304,42 +283,7 @@ public class TankScript : MonoBehaviour {
         }
     }
 
-    //Envia POST request para iniciar una sesión de juego en el servidor.
-    private static void sessionInit(string gameSessionJSON)
-    {
-        UnityWebRequest www = UnityWebRequest.Post("http://192.168.98.131:5000/gameSessionInit", gameSessionJSON);
-        www.Send();
-    }
 
-    //Procesa respuesta del servidor y lo convierte en JSON.
-    private string ProcessJson(string jsonString)
-    {
-        JsonData jsonServer = JsonMapper.ToObject(jsonString);
-        string gameStateJson = jsonServer["gameState"].ToString();
-        Debug.Log(gameStateJson);
-        return gameStateJson;
-    }
 
-    //Creador de la sesión de juego
-    public TankScript[] createGameSession()
-    {
-        TankScript[] gameSession = new TankScript[1];
-        string gameSessionJSON = sessionCreator(gameSession);
-        Debug.Log(gameSessionJSON);
-        sessionInit(gameSessionJSON);
-        return gameSession;
-    }
-
-    //Crea una nueva sesión en un array y luego a JSON para ser enviado al servidor.
-    private string sessionCreator(TankScript[] gameSession)
-    {
-        gameSession[0] = new GameServer(GUIDCreator(), playersArray, "Waiting", "None");
-        return jsonConverter(gameSession);
-    }
-
-    private static string jsonConverter(GameServer[] gameSession)
-    {
-        return JsonHelper.ToJson(gameSession);
-    }
 
 }

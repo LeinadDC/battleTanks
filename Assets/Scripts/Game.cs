@@ -8,6 +8,9 @@ using UnityEngine.Networking;
 public class Game : MonoBehaviour {
 
     // Clase interna usada para manejar las sesiones.
+
+    #region Clase seriazable para manejar sesiones
+
     [Serializable]
     public class GameServer
     {
@@ -24,46 +27,42 @@ public class Game : MonoBehaviour {
             this.gameWinner = gameWinner;
         }
     }
+    #endregion
 
-    
+    #region Variables de sesión
+
     public GameObject player1;
     public GameObject player2;
     TankScript enemy;
     TankScript enemy2;
     TankScript.Player[] playersArray;
     GameServer[] activeServer = new GameServer[1];
+    #endregion
 
-    //Inicia un nuevo servidor de juego.
+    //Inicia una nueva sesión.
     private void Start()
     {
         activeServer = createGameSession();
     }
-    //Construye los datos del servidor.
+
+    //Construye la sesión.
     void Update   () {
         gameBuilder();
     }
 
     void gameBuilder()
     {
-  
-        //Verifica que todo está bien.
+            //Verifica el estado del juego.
             if(activeServer[0].gameState  == "Waiting")
             {
             //Instancia jugadores, cambia de estado y actualiza información en servidor.
-            if (activeServer[0].players == null || activeServer[0].players.Length == 0)
-            {
                 Debug.Log("Instanciando jugadores");
                 instantiatePlayers(activeServer);
-
-            }
-            else
-            {
                 Debug.Log("Ya hay jugadores");
                 activeServer[0].gameState = "Begun";
                 putData(activeServer[0].gameId, jsonConverter(activeServer));
                 getData(activeServer[0].gameId);
                 Debug.Log(jsonConverter(activeServer));
-            }
 
             }
             //Les señala a los tanques que ya pueden iniciar.
@@ -195,7 +194,7 @@ public class Game : MonoBehaviour {
     private static void sessionUpdate(string gameId, string gameSessionJSON)
     {
         string requestUrl = putRequestUrlBuilder(gameId);
-        UnityWebRequest www = UnityWebRequest.Put(requestUrl, gameSessionJSON);
+        UnityWebRequest www = UnityWebRequest.Post(requestUrl, gameSessionJSON);
         www.Send();
     }
 
