@@ -67,24 +67,6 @@ public class TankScript : MonoBehaviour {
         return player;
     }
 
-
-    void postData()
-    {
-        movementCords = transform.position.ToString();
-        var test = JsonUtility.ToJson(this);
-        UnityWebRequest www = UnityWebRequest.Post("http://192.168.98.131:5000/testPost", test);
-        www.SetRequestHeader("Content-Type", "application/json");
-        www.Send();
-        Debug.Log("Enviado : " + test);
-    }
-
-    void getData()
-    {
-        UnityWebRequest www = UnityWebRequest.Get("http://192.168.98.131:5000/testGet");
-        www.Send();
-        Debug.Log("Descargado del servidor: "+ www.downloadHandler.text.ToString());
-    }
-
     // Get the other (s) tank (s) in order to play against them. Can also be used to change objective in case there are many tanks.
    void getObjective()
     {
