@@ -7,6 +7,7 @@ using Assets.Scripts;
 using UnityEngine.Networking;
 using System.Text;
 using UnityEngine.SceneManagement;
+using LitJson;
 
 public class LoginManager : MonoBehaviour {
 
@@ -14,6 +15,7 @@ public class LoginManager : MonoBehaviour {
     public InputField email;
     public Button loginButton;
     public Button registerButton;
+    public static string userToken;
 
     RegisterForm form;
     void Start()
@@ -23,7 +25,7 @@ public class LoginManager : MonoBehaviour {
         loginButton.onClick.AddListener(loginEvent);
         registerButton.onClick.AddListener(registerEvent);
         form = new RegisterForm();
-
+     
     }
 
     private void loginEvent()
@@ -51,6 +53,7 @@ public class LoginManager : MonoBehaviour {
         request.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
         request.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
         request.SetRequestHeader("Content-Type", "application/json");
+     
 
         yield return request.Send();
 
@@ -61,9 +64,36 @@ public class LoginManager : MonoBehaviour {
         }
         else
         {
-            Debug.Log("Status Code: " + request.responseCode);
+            Debug.Log(request.downloadHandler.text);
+            JsonData jsonServer = JsonMapper.ToObject(request.downloadHandler.text);
+            string token = jsonServer["access_token"].ToString();
+            userToken = token;
             SceneManager.LoadScene("MainGame");
+        
         }
+    }
+
+    public string getUserToken()
+    {
+        return userToken;
+    }
+    
+
+    IEnumerator Test(string bodyJsonString)
+    {
+        WWWForm form = new WWWForm();
+        var headers  =new Hashtable(form.headers);
+        string url = "www.myurl.com";
+        // Add a custom header to the request.
+        // In this case a basic authentication to access a password protected resource.
+        headers["Authorization"] = "Bearer " + System.Convert.ToBase64String(
+            System.Text.Encoding.ASCII.GetBytes("username:password"));
+        headers.Add("Content-Type", "application/json");
+
+        // Post a request to an URL with our custom headers
+        WWW www = new WWW(url, Encoding.ASCII.GetBytes(bodyJsonString), headers);
+        yield return www;
+        //.. process results from WWW request here...
     }
 
     // Update is called once per frame

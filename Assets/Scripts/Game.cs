@@ -36,6 +36,7 @@ public class Game : MonoBehaviour {
     //Inicia un nuevo servidor de juego.
     private void Start()
     {
+   
         activeServer = createGameSession();
     }
     //Construye los datos del servidor.
@@ -76,6 +77,8 @@ public class Game : MonoBehaviour {
         Debug.Log("get data");
         string requestUrl = requestUrlBuilder(gameId);
         UnityWebRequest www = UnityWebRequest.Get(requestUrl);
+        string auth = "Bearer " + LoginManager.userToken;
+        www.SetRequestHeader("Authorization", auth);
         StartCoroutine(getSession(www));
     }
 
@@ -103,6 +106,8 @@ public class Game : MonoBehaviour {
         string requestUrl = putRequestUrlBuilder(gameId);
         UnityWebRequest www = UnityWebRequest.Post(requestUrl,jsonGameSession);
         Debug.Log(jsonGameSession);
+        string auth = "Bearer " + LoginManager.userToken;
+        www.SetRequestHeader("Authorization", auth);
         StartCoroutine(putSession(www));
     }
 
@@ -175,14 +180,19 @@ public class Game : MonoBehaviour {
     }
 
     //Envia POST request para iniciar una sesión de juego en el servidor.
-    private static void sessionInit(string gameSessionJSON)
+    private void sessionInit(string gameSessionJSON)
     {
         UnityWebRequest www = UnityWebRequest.Post("http://192.168.98.131:5000/gameSessionInit", gameSessionJSON);
+        string auth = "Bearer " + LoginManager.userToken;
+
+        Debug.Log("Este es el auth " + auth);
+        www.SetRequestHeader("Authorization", auth);
         www.Send();
+        Debug.Log("Este es el estado del init" + www.responseCode);
     }
 
     //Envia PUT request para agregar los jugadores de juego en el servidor.
-    private static void sessionUpdate(string gameId, string gameSessionJSON)
+    private void sessionUpdate(string gameId, string gameSessionJSON)
     {
         string requestUrl = putRequestUrlBuilder(gameId);
         UnityWebRequest www = UnityWebRequest.Put(requestUrl, gameSessionJSON);
