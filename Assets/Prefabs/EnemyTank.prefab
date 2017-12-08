@@ -218,14 +218,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   thrust: 1
   munition:
-  - {fileID: 1552271447094930, guid: e1e99e3f776391b4fbd7252b0be9c2e7, type: 2}
+  - {fileID: 1552271447094930, guid: 53fd369d439fcbf4f93955e8379eb6e3, type: 2}
   - {fileID: 1643985028773764, guid: c0d1aa119631ded4c9fda07b67ccd037, type: 2}
   - {fileID: 1226227421115346, guid: 46de9d83de4e6fd4e8d264eaac3059f2, type: 2}
   tankLife: 100
-  playerId: Test2
-  actionId: 2
-  actionType: Correr
-  movementCords: 
+  gameStarted: 0
+  Health: {fileID: 1419570888994088, guid: 02236e931c2784e498336f2a711a5115, type: 2}
 --- !u!212 &212057617692416436
 SpriteRenderer:
   m_ObjectHideFlags: 1

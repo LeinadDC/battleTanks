@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using LitJson;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class Game : MonoBehaviour {
 
@@ -28,21 +29,103 @@ public class Game : MonoBehaviour {
     
     public GameObject player1;
     public GameObject player2;
-    TankScript enemy;
+    TankScript enemy;       
     TankScript enemy2;
     TankScript.Player[] playersArray = new TankScript.Player[2];
     GameServer[] activeServer = new GameServer[1];
+    public GameObject count;
+    Text countdown;
+    private GameObject theTarget = null;
+    public GameObject winner;
+    Text winnerText;
+    public GameObject objectButton;
+    public Button playAgain;
 
     //Inicia un nuevo servidor de juego.
     private void Start()
     {
-   
+        countdown = count.GetComponent<Text>();
+        winnerText = winner.GetComponent<Text>();
+        playAgain = objectButton.GetComponent<Button>();
         activeServer = createGameSession();
+        playAgain.onClick.AddListener(restartGame);
     }
+
+    private void restartGame()
+    {
+        Application.LoadLevel(Application.loadedLevel);
+    }
+    float timeLeft = 3.0f;
     //Construye los datos del servidor.
-    void Update   () {
-        gameBuilder();
+    void Update() {
+        timeLeft -= Time.deltaTime;
+        countdown.text = Mathf.Round(timeLeft).ToString();
+
+        if(timeLeft < 0)
+        {
+            count.SetActive(false);
+            gameBuilder();
+            activateAndPlay();
+            if(enemy == null || enemy2 == null)
+            {
+                if (enemy == null)
+                {
+                    deactivateAndStop();
+                    winner.SetActive(true);
+                    objectButton.SetActive(true);
+                    winnerText.text = "Ganó el jugador 2";
+                    activeServer[0].gameWinner = activeServer[0].players[1].playerId;
+                    activeServer[0].gameState = "Finished";
+                    putData(activeServer[0].gameId, jsonConverter(activeServer));
+                    enabled = false;
+
+                }
+                else if(enemy2 == null){
+                    deactivateAndStop();
+                    winner.SetActive(true);
+                    objectButton.SetActive(true);
+                    winnerText.text = "Ganó el jugador 1";
+                    activeServer[0].gameWinner = activeServer[0].players[0].playerId;
+                    activeServer[0].gameState = "Finished";
+                    putData(activeServer[0].gameId, jsonConverter(activeServer));
+                    enabled = false;
+                }
+
+            }
+            else
+            {
+               
+            }
+
+        }
+
     }
+
+    // Get the other (s) tank (s) in order to play against them. Can also be used to change objective in case there are many tanks.
+    void activateAndPlay()
+    {
+        var tanks = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (var tank in tanks)
+        {
+            tank.SetActive(true);
+            var test = tank.GetComponent<TankScript>();
+            test.changeState(true);
+        }
+
+    }
+
+    void deactivateAndStop()
+    {
+        var tanks = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (var tank in tanks)
+        {
+            tank.SetActive(false);
+            var test = tank.GetComponent<TankScript>();
+            test.changeState(false);
+        }
+
+    }
+
 
     void gameBuilder()
     {
@@ -61,8 +144,8 @@ public class Game : MonoBehaviour {
             //Les señala a los tanques que ya pueden iniciar.
             else if(activeServer[0].gameState == "Begun")
             {
-                enemy.changeState(true);
-                enemy2.changeState(true);
+            enemy.changeState(true);
+            enemy2.changeState(true);
             }
             else
             {
@@ -206,6 +289,7 @@ public class Game : MonoBehaviour {
         //Instanciando jugador 1.
         enemy = GameObject.Instantiate(player1, Vector3.zero, Quaternion.identity).GetComponent<TankScript>();
         enemy.Initialize(GUIDCreator(), 100, 3, 0);
+        
 
         //Instanciando jugador 2-
         enemy2 = GameObject.Instantiate(player2, Vector3.zero, Quaternion.identity).GetComponent<TankScript>();
@@ -224,10 +308,7 @@ public class Game : MonoBehaviour {
         return playeriD;
     }
 
-    //Se inicia el juego crenado un nuevo GUID, gameState y gameWinner, ademas de los tanques.
-    //No empezar el juego hasta que el estado del servidor (game session sea OK)
-    //Esperar a que existan 2 tanques en el juego para que sea OK y existan en el juego.
-    //Cada tanque debe tener las siguientes variables inizialibales PUBLICAS
-    // Vida y GUID que se le asigna
 
+   
+    //Post GameWinner
 }

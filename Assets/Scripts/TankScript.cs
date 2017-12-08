@@ -16,14 +16,12 @@ public class TankScript : MonoBehaviour {
     private State state;
     private float verticalBorder, horizontalBorder;
     public int tankLife = 100;
-    private Text lifeText;
     private string playerId;
     public bool gameStarted;
 
-    //TEST
-    public int actionId = 1;
-    public string actionType = "Atacar";
-    public string movementCords;
+    public GameObject Health;
+    GameObject clone;
+    Text life;
 
     public enum State
     {
@@ -32,6 +30,7 @@ public class TankScript : MonoBehaviour {
         Evade,
         Flee,
     }
+
     [Serializable]
     public class Player{
         public string playerId;
@@ -39,6 +38,12 @@ public class TankScript : MonoBehaviour {
     }
     // Variables initialization
     void Start() {
+        clone = Instantiate(Health);
+        clone.transform.SetParent(GameObject.Find("Canvas").transform, false);
+
+        life = clone.GetComponent<Text>();
+        life.text = tankLife.ToString();
+
         barrel = transform.Find("Barrel");
         getObjective();
         verticalBorder = Camera.main.orthographicSize;
@@ -77,6 +82,7 @@ public class TankScript : MonoBehaviour {
         } while (theTarget == transform.gameObject);
 
     }
+
     float tChange = 0;
     float randomX;
     float randomY;
@@ -86,37 +92,19 @@ public class TankScript : MonoBehaviour {
     {
         if (gameStarted)
         {
+            clone.transform.position = Camera.main.WorldToScreenPoint(transform.position);
             automaticMovement();
             shootEnemy(barrel.transform.position);
             LifeHandler();
         }
         else
         {
-            
+            Debug.Log("Waiting");
         }
-
-        //    Collider2D hit = Physics2D.OverlapCircle(transform.position,0.6f);
-        //    var xPosition = hit.transform.position.x;
-        //    var yPosition = hit.transform.position.x;
-        //    if (hit.tag == "Bullet")
-        //        {
-        //            Debug.Log("Objeto detectado" + xPosition + yPosition);
-        //        state = State.Chase;
-        //        }
-
-        //        if(state == State.Chase)
-        //    {
-        //        evadeEnemy(xPosition, yPosition);
-
-        //    }
     }
 
     private void automaticMovement()
     {
-        var maxX = 6;
-        var minX = -6;
-        var maxY = 4.7;
-        var minY = -4.7;
         generateRandomMovementRange();
 
         movementR = new Vector3(randomX, randomY, 0);
@@ -168,7 +156,7 @@ public class TankScript : MonoBehaviour {
     }
 
     float basicTimer;
-    float basicWaitingTime = 1f;
+    float basicWaitingTime = 0.1f;
     int counterTest = 0;
     
     void evadeEnemy(float xPosition, float yPosition)
@@ -176,18 +164,14 @@ public class TankScript : MonoBehaviour {
         Vector3 moveDestination = new Vector3(-4.50f, 2.37f);
         if(xPosition <= 0)
         {
-            //transform.position = Vector3.MoveTowards(transform.position, moveDestination, Time.deltaTime * thrust);
+      
            transform.Translate(new Vector3(moveDestination.x, moveDestination.y) * Time.deltaTime * thrust, Space.World);
         }
         else
         {
-            //transform.position = Vector3.MoveTowards(transform.position, moveDestination, Time.deltaTime * thrust);
+           
             transform.Translate(new Vector3(moveDestination.x, moveDestination.y) * Time.deltaTime * thrust, Space.World);
         }
-        //do
-        //{
-        //    transform.position = Vector3.MoveTowards(transform.position, moveDestination, Time.deltaTime * thrust);
-        //} while (transform.position != moveDestination);
     }
     void shootEnemy(Vector3 barrel)
     {
@@ -232,7 +216,6 @@ public class TankScript : MonoBehaviour {
         var worldOffset = barrel.transform.rotation * localOffset;
         var spawnPosition = barrel.transform.position + worldOffset;
         return Instantiate(munitionType, spawnPosition, barrel.transform.rotation);
-        
     }
 
     int basicCounter = 0;
@@ -242,40 +225,42 @@ public class TankScript : MonoBehaviour {
         {
             basicCounter++;
             Debug.Log("Contador basico " + basicCounter);
-            if(basicCounter == 50)
+            if (basicCounter == 50)
             {
                 tankLife -= 25;
+                life.text = tankLife.ToString();
+                basicCounter = 0;
             }
-           // postData();
-           // getData();
 
         }else if(collision.gameObject.tag == "MediumBullet")
         {
             tankLife -= 50;
+            life.text = tankLife.ToString();
             Debug.Log("Impacto medio");
         }else if(collision.gameObject.tag == "HeavyBullet")
         {
             tankLife -= 100;
+            life.text = tankLife.ToString();
             Debug.Log("Impacto pesado");
         }
         else
         {
             Debug.Log("Impacto con otro objeto");
+            if (collision.gameObject.name == "LeftWall" || collision.gameObject.name == "RightWall")
+            {
+                Debug.Log("Cambiado x");
+                movementR.x *= -1;
+                transform.Translate(movementR * thrust * Time.deltaTime);
+            }
+            else if(collision.gameObject.name == "TopWall" || collision.gameObject.name == "BottomWall")
+            {
+                Debug.Log("Cambiado y");
+                movementR.y *= -1;
+                transform.Translate(movementR * thrust * Time.deltaTime);
+            }
+        }
         }
 
-        if (collision.gameObject.name == "LeftWall" || collision.gameObject.name == "RightWall")
-        {
-            Debug.Log("Cambiado x");
-            movementR.x *= -1;
-            transform.Translate(movementR * -1f * thrust * Time.deltaTime);
-        }
-        else if(collision.gameObject.name == "TopWall" || collision.gameObject.name == "BottomWall")
-        {
-            Debug.Log("Cambiado y");
-            movementR.y *= -1;
-            transform.Translate(movementR * - 1f * thrust * Time.deltaTime);
-        }
-    }
 
     void LifeHandler()
     {
@@ -284,6 +269,7 @@ public class TankScript : MonoBehaviour {
             Destroy(gameObject);
         }
     }
+
 
 
 }

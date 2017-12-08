@@ -16,10 +16,11 @@ public class LoginManager : MonoBehaviour {
     public Button loginButton;
     public Button registerButton;
     public static string userToken;
-
     RegisterForm form;
+
     void Start()
     {
+        //Inicializa listeners para campos de login.
         password.onEndEdit.AddListener(SubmitPass);
         email.onEndEdit.AddListener(SubmitEmail);
         loginButton.onClick.AddListener(loginEvent);
@@ -27,7 +28,7 @@ public class LoginManager : MonoBehaviour {
         form = new RegisterForm();
      
     }
-
+# region Eventos de botones e input
     private void loginEvent()
     {
         string jsonForm = JsonUtility.ToJson(form);
@@ -46,6 +47,21 @@ public class LoginManager : MonoBehaviour {
         StartCoroutine(Post(requestUrl, existingUser));
     }
 
+    private void SubmitPass(string pass)
+    {
+        Debug.Log(pass);
+        Debug.Log(password.text);
+        form.password = pass;
+    }
+
+    private void SubmitEmail(string mail)
+    {
+        Debug.Log(mail);
+        form.email = mail;
+    }
+    #endregion
+
+#region Acciones API
     IEnumerator Post(string url, string bodyJsonString)
     {
         var request = new UnityWebRequest(url, "POST");
@@ -95,22 +111,7 @@ public class LoginManager : MonoBehaviour {
         yield return www;
         //.. process results from WWW request here...
     }
+#endregion
 
-    // Update is called once per frame
-    void Update () {
-		
-	}
 
-    private void SubmitPass(string pass)
-    {
-        Debug.Log(pass);
-        Debug.Log(password.text);
-        form.password = pass;
-    }
-
-    private void SubmitEmail(string mail)
-    {
-        Debug.Log(mail);
-        form.email = mail;
-    }
 }

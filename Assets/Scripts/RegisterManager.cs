@@ -24,12 +24,8 @@ public class RegisterManager : MonoBehaviour {
         form = new RegisterForm();
 
     }
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 
+    #region Acciones de input y boton
     private void SubmitForm()
     {
         string jsonForm = JsonUtility.ToJson(form);
@@ -57,6 +53,9 @@ public class RegisterManager : MonoBehaviour {
         Debug.Log(mail);
         form.email = mail;
     }
+    #endregion
+
+    #region Acciones API
     void register(string newUser)
     {
         string requestUrl = "http://192.168.98.131:5000/register";
@@ -75,5 +74,6 @@ public class RegisterManager : MonoBehaviour {
 
         Debug.Log("Status Code: " + request.responseCode);
     }
+#endregion 
 }
 

@@ -9,6 +9,8 @@ TagManager:
   - MediumBullet
   - HeavyBullet
   - Wall
+  - Canvas
+  - Life
   layers:
   - Default
   - TransparentFX
